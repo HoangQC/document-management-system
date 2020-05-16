@@ -26,7 +26,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -37,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.openkm.bean.Document;
+import com.openkm.bean.ExtendedAttributes;
 import com.openkm.bean.LockInfo;
 import com.openkm.bean.Version;
 import com.openkm.core.MimeTypeConfig;
@@ -503,6 +513,28 @@ public class DocumentService {
 			String path = dm.getPath(null, uuid);
 			log.debug("getPath: {}", path);
 			return path;
+		} catch (Exception e) {
+			throw new GenericException(e);
+		}
+	}
+
+	@PUT
+	@Path("/extendedCopy")
+	public void extendedCopy(@QueryParam("docId") String docId, @QueryParam("dstId") String dstId, @QueryParam("name") String name,
+							 @QueryParam("categories") boolean categories, @QueryParam("keywords") boolean keywords,
+							 @QueryParam("propertyGroups") boolean propertyGroups, @QueryParam("notes") boolean notes,
+							 @QueryParam("wiki") boolean wiki) throws GenericException {
+		try {
+			log.debug("extendedCopy({}, {}, {}, {}, {}, {}, {}, {})", new Object[]{docId, dstId, name, categories, keywords, propertyGroups, notes, wiki});
+			DocumentModule dm = ModuleManager.getDocumentModule();
+			ExtendedAttributes extAttr = new ExtendedAttributes();
+			extAttr.setCategories(categories);
+			extAttr.setKeywords(keywords);
+			extAttr.setNotes(notes);
+			extAttr.setPropertyGroups(propertyGroups);
+			extAttr.setWiki(wiki);
+			dm.extendedCopy(null, docId, dstId, name, extAttr);
+			log.debug("extendedCopy: void");
 		} catch (Exception e) {
 			throw new GenericException(e);
 		}
